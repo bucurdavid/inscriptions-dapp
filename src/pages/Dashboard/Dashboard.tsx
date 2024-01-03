@@ -12,16 +12,13 @@ type WidgetsType = {
 
 const WIDGETS: WidgetsType[] = [
   {
-    title: 'Account',
-    widget: Account,
-    description: 'Connected account details',
-    reference: 'https://docs.multiversx.com/sdk-and-tools/sdk-dapp/#account'
+    title: 'Account Inscriptions',
+    widget: Account
   },
   {
     title: 'Inscriptions',
     widget: SignMessage,
-    description:
-      'Experimental Inscriptions. Save custom immutable data cheaper. You can then use it off-chain or for NFTs',
+    description: 'Store custom objects on the blockchain',
     reference: 'https://twitter.com/SasuRobert/status/1738173405981983018'
   }
 ];

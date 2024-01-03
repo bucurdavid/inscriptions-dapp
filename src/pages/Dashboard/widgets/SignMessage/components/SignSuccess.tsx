@@ -46,7 +46,7 @@ export const SignSuccess = ({ messageToSign }: { messageToSign: string }) => {
             readOnly
             className='resize-none outline-none text-green-700 bg-transparent'
             rows={1}
-            value={decodedMessage}
+            value={atob(decodedMessage)}
             placeholder='Decoded message'
           />
         </div>

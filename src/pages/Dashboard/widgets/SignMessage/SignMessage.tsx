@@ -9,16 +9,34 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useGetSignMessageSession } from '@multiversx/sdk-dapp/hooks/signMessage/useGetSignMessageSession';
 import { Button } from 'components/Button';
 import { OutputContainer } from 'components/OutputContainer';
-import { useGetLastSignedMessageSession, useSignMessage } from 'hooks';
+import {
+  useGetAccount,
+  useGetAccountInfo,
+  useGetLastSignedMessageSession,
+  useSignMessage
+} from 'hooks';
 import { SignedMessageStatusesEnum } from 'types';
 import { SignFailure, SignSuccess } from './components';
+import {
+  Address,
+  GasEstimator,
+  Transaction,
+  TransactionPayload
+} from '@multiversx/sdk-core/out';
+import { getChainId } from 'utils/getChainId';
+import { refreshAccount } from '@multiversx/sdk-dapp/utils/account/refreshAccount';
+import { sendTransactions } from '@multiversx/sdk-dapp/services/transactions/sendTransactions';
+import { SHA256 } from 'crypto-js';
 
 export const SignMessage = () => {
+  const { address } = useGetAccountInfo();
   const { sessionId, signMessage, onAbort } = useSignMessage();
   const signedMessageInfo = useGetLastSignedMessageSession();
   const messageSession = useGetSignMessageSession(sessionId);
 
   const [message, setMessage] = useState('');
+  const [objectBase64, setObjectBase64] = useState('');
+  const [objectHash, setObjectHash] = useState('');
 
   const handleSubmit = (e: MouseEvent) => {
     e.preventDefault();
@@ -31,8 +49,17 @@ export const SignMessage = () => {
       return;
     }
 
+    // transform to base64
+    const objectBase64 = btoa(message);
+
+    // hash the object
+    const hash = SHA256(objectBase64).toString();
+
+    setObjectBase64(objectBase64);
+    setObjectHash(hash);
+
     signMessage({
-      message,
+      message: objectBase64,
       callbackRoute: window.location.href
     });
 
@@ -75,30 +102,83 @@ export const SignMessage = () => {
       <OutputContainer>
         {!isSuccess && !isError && (
           <textarea
-            placeholder='Object to inscribe'
+            placeholder={
+              'Object to inscribe\n Example: {"name":"John", "age":30, "car":null}'
+            }
             className='resize-none rounded-md w-full h-32 focus:outline-none focus:border-blue-500'
             onChange={(event) => setMessage(event.currentTarget.value)}
           />
         )}
 
         {isSuccess && (
-          <SignSuccess messageToSign={messageSession?.message ?? ''} />
+          <>
+            <SignSuccess messageToSign={signedMessageInfo?.message ?? ''} />
+          </>
         )}
 
         {isError && <SignFailure />}
       </OutputContainer>
-      <p className='text-gray-400 text-sm'>
-        {' '}
-        Store compact JSON data on the blockchain.{' '}
-      </p>
-      <Button
-        data-testid='signMsgBtn'
-        onClick={handleSubmit}
-        disabled={!message}
-      >
-        <FontAwesomeIcon icon={faFileSignature} className='mr-1' />
-        Inscribe
-      </Button>
+
+      {!isSuccess ? (
+        <>
+          <Button
+            data-testid='signMsgBtn'
+            onClick={handleSubmit}
+            disabled={!message}
+          >
+            <FontAwesomeIcon icon={faFileSignature} className='mr-1' />
+            Sign Message
+          </Button>
+          <p className='text-gray-300 text-xs'>
+            You will sign the base64 encoded object
+          </p>
+        </>
+      ) : (
+        <Button
+          data-testid='inscribeBtn'
+          onClick={() =>
+            inscribeTransaction(
+              address,
+              objectBase64,
+              objectHash,
+              signedMessageInfo?.signature
+            )
+          }
+        >
+          Inscribe
+        </Button>
+      )}
     </div>
   );
+};
+
+const inscribeTransaction = async (
+  address: string,
+  object: string,
+  objectHash: string,
+  signature: string | undefined
+) => {
+  if (!signature) {
+    return;
+  }
+  const tx = new Transaction({
+    value: 0,
+    data: new TransactionPayload(
+      `inscribe@${object}@${objectHash}@${signature}`
+    ),
+    receiver: new Address(address),
+    sender: new Address(address),
+    gasLimit: new GasEstimator().forEGLDTransfer(object.length) + 5_000_000,
+    chainID: getChainId()
+  });
+  await refreshAccount();
+  await sendTransactions({
+    transactions: tx,
+    transactionsDisplayInfo: {
+      processingMessage: 'Inscribing...',
+      errorMessage: 'Error occurred inscribing',
+      successMessage: 'Inscribed successfully'
+    },
+    redirectAfterSign: false
+  });
 };
