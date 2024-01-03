@@ -57,16 +57,7 @@ export const SignMessage = () => {
 
   return (
     <div className='flex flex-col gap-6'>
-      <div className='flex flex gap-2 items-start'>
-        <Button
-          data-testid='signMsgBtn'
-          onClick={handleSubmit}
-          disabled={!message}
-        >
-          <FontAwesomeIcon icon={faFileSignature} className='mr-1' />
-          Sign
-        </Button>
-
+      <div className='flex gap-2 items-start'>
         {(isSuccess || isError) && (
           <Button
             data-testid='closeTransactionSuccessBtn'
@@ -84,8 +75,8 @@ export const SignMessage = () => {
       <OutputContainer>
         {!isSuccess && !isError && (
           <textarea
-            placeholder='Write message here'
-            className='resize-none rounded-md w-full h-32 rounded-lg focus:outline-none focus:border-blue-500'
+            placeholder='Object to inscribe'
+            className='resize-none rounded-md w-full h-32 focus:outline-none focus:border-blue-500'
             onChange={(event) => setMessage(event.currentTarget.value)}
           />
         )}
@@ -96,6 +87,18 @@ export const SignMessage = () => {
 
         {isError && <SignFailure />}
       </OutputContainer>
+      <p className='text-gray-400 text-sm'>
+        {' '}
+        Store compact JSON data on the blockchain.{' '}
+      </p>
+      <Button
+        data-testid='signMsgBtn'
+        onClick={handleSubmit}
+        disabled={!message}
+      >
+        <FontAwesomeIcon icon={faFileSignature} className='mr-1' />
+        Inscribe
+      </Button>
     </div>
   );
 };

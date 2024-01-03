@@ -6,7 +6,7 @@ import { WithClassnameType } from 'types';
 interface CardType extends PropsWithChildren, WithClassnameType {
   title: string;
   description?: string;
-  reference: string;
+  reference?: string;
 }
 
 export const Card = (props: CardType) => {
@@ -19,13 +19,15 @@ export const Card = (props: CardType) => {
     >
       <h2 className='flex text-xl font-medium group'>
         {title}
-        <a
-          href={reference}
-          target='_blank'
-          className='hidden group-hover:block ml-2 text-blue-600'
-        >
-          <FontAwesomeIcon icon={faInfoCircle} size='sm' />
-        </a>
+        {reference && (
+          <a
+            href={reference}
+            target='_blank'
+            className='hidden group-hover:block ml-2 text-blue-600'
+          >
+            <FontAwesomeIcon icon={faInfoCircle} size='sm' />
+          </a>
+        )}
       </h2>
       {description && <p className='text-gray-400 mb-6'>{description}</p>}
       {children}

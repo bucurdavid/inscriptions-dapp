@@ -1,26 +1,25 @@
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 
 import {
   AxiosInterceptorContext, // using this is optional
   DappProvider,
   Layout,
-  TransactionsToastList,
   NotificationModal,
-  SignTransactionsModals
+  SignTransactionsModals,
   // uncomment this to use the custom transaction tracker
   // TransactionsTracker
+  TransactionsToastList
 } from 'components';
 
 import {
   apiTimeout,
-  walletConnectV2ProjectId,
   environment,
-  sampleAuthenticatedDomains
+  sampleAuthenticatedDomains,
+  walletConnectV2ProjectId
 } from 'config';
 import { RouteNamesEnum } from 'localConstants';
 import { PageNotFound, Unlock } from 'pages';
 import { routes } from 'routes';
-import { BatchTransactionsContextProvider } from 'wrappers';
 
 const AppContent = () => {
   return (
@@ -33,7 +32,7 @@ const AppContent = () => {
       }}
       dappConfig={{
         shouldUseWebViewProvider: true,
-        logoutRoute: RouteNamesEnum.unlock
+        logoutRoute: RouteNamesEnum.home
       }}
       customComponents={{
         transactionTracker: {
@@ -79,9 +78,7 @@ export const App = () => {
         authenticatedDomains={sampleAuthenticatedDomains}
       >
         <Router>
-          <BatchTransactionsContextProvider>
-            <AppContent />
-          </BatchTransactionsContextProvider>
+          <AppContent />
         </Router>
       </AxiosInterceptorContext.Interceptor>
     </AxiosInterceptorContext.Provider>

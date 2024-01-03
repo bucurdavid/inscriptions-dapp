@@ -1,5 +1,4 @@
 import { AuthRedirectWrapper, PageWrapper } from 'wrappers';
-import { Transaction } from './Transaction';
 
 export const Home = () => {
   return (
@@ -32,7 +31,6 @@ export const Home = () => {
                   blockchain.
                 </p>
               </div>
-              <Transaction />
             </div>
           </div>
           <div className='h-4/6 bg-mvx-white bg-contain bg-no-repeat w-1/2 bg-center' />

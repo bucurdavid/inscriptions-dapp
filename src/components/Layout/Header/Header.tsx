@@ -11,7 +11,7 @@ export const Header = () => {
 
   const handleLogout = () => {
     sessionStorage.clear();
-    logout(`${window.location.origin}/unlock`, undefined, false);
+    logout(`${window.location.origin}/`, undefined, false);
   };
 
   return (
