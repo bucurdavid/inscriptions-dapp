@@ -53,7 +53,7 @@ export const Unlock = () => {
               loginButtonText='DeFi Wallet'
               {...commonProps}
             />
-            <OperaWalletLoginButton
+            {/* <OperaWalletLoginButton
               loginButtonText='Opera Crypto Wallet - Beta'
               {...commonProps}
             />
@@ -61,7 +61,7 @@ export const Unlock = () => {
               loginButtonText='Web Wallet'
               data-testid='webWalletLoginBtn'
               {...commonProps}
-            />
+            /> */}
             <XaliasLoginButton
               loginButtonText='xAlias'
               data-testid='xAliasLoginBtn'

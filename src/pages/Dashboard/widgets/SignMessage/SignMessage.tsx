@@ -1,35 +1,40 @@
-import { useState } from 'react';
-import type { MouseEvent } from 'react';
 import {
-  faFileSignature,
+  faArrowsRotate,
   faBroom,
-  faArrowsRotate
+  faFileSignature
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useGetSignMessageSession } from '@multiversx/sdk-dapp/hooks/signMessage/useGetSignMessageSession';
-import { Button } from 'components/Button';
-import { OutputContainer } from 'components/OutputContainer';
-import {
-  useGetAccount,
-  useGetAccountInfo,
-  useGetLastSignedMessageSession,
-  useSignMessage
-} from 'hooks';
-import { SignedMessageStatusesEnum } from 'types';
-import { SignFailure, SignSuccess } from './components';
 import {
   Address,
   GasEstimator,
   Transaction,
   TransactionPayload
 } from '@multiversx/sdk-core/out';
-import { getChainId } from 'utils/getChainId';
-import { refreshAccount } from '@multiversx/sdk-dapp/utils/account/refreshAccount';
+import { useGetSignMessageSession } from '@multiversx/sdk-dapp/hooks/signMessage/useGetSignMessageSession';
 import { sendTransactions } from '@multiversx/sdk-dapp/services/transactions/sendTransactions';
-import { SHA256 } from 'crypto-js';
+import { refreshAccount } from '@multiversx/sdk-dapp/utils/account/refreshAccount';
+import axios from 'axios';
+import { Button } from 'components/Button';
+import { OutputContainer } from 'components/OutputContainer';
+import {
+  useGetAccountInfo,
+  useGetLastSignedMessageSession,
+  useGetLoginInfo,
+  useGetPendingTransactions,
+  useSignMessage,
+  useTrackTransactionStatus
+} from 'hooks';
+import type { MouseEvent } from 'react';
+import { useEffect, useState } from 'react';
+import { SignedMessageStatusesEnum } from 'types';
+import { getChainId } from 'utils/getChainId';
+import { SignFailure, SignSuccess } from './components';
+import toast from 'react-hot-toast';
+import { deleteTransactionToast } from '@multiversx/sdk-dapp/services/transactions/clearTransactions';
 
 export const SignMessage = () => {
   const { address } = useGetAccountInfo();
+  const { tokenLogin, loginMethod } = useGetLoginInfo();
   const { sessionId, signMessage, onAbort } = useSignMessage();
   const signedMessageInfo = useGetLastSignedMessageSession();
   const messageSession = useGetSignMessageSession(sessionId);
@@ -37,8 +42,37 @@ export const SignMessage = () => {
   const [message, setMessage] = useState('');
   const [objectBase64, setObjectBase64] = useState('');
   const [objectHash, setObjectHash] = useState('');
+  const [inscribeSession, setInscribeSession] = useState('');
+  const [inscribeTxHash, setInscribeTxHash] = useState<string>('');
+  const [inscribeTxStatus, setInscribeTxStatus] = useState(false);
 
-  const handleSubmit = (e: MouseEvent) => {
+  const isWebWallet = loginMethod === 'wallet';
+
+  const inscribeSessionId = useTrackTransactionStatus({
+    transactionId: inscribeSession
+  });
+
+  const { pendingTransactions } = useGetPendingTransactions();
+
+  useEffect(() => {
+    if (!pendingTransactions[inscribeSession]) return;
+    const transactionHash =
+      pendingTransactions[inscribeSession].transactions[0].hash;
+    console.log(transactionHash);
+    setInscribeTxHash(transactionHash);
+  }, [pendingTransactions]);
+
+  useEffect(() => {
+    setInscribeTxStatus(inscribeSessionId.isSuccessful ? true : false);
+  }, [inscribeSessionId]);
+
+  useEffect(() => {
+    if (inscribeTxStatus && !isWebWallet) {
+      sendProcess();
+    }
+  }, [inscribeTxStatus]);
+
+  const handleSubmit = async (e: MouseEvent) => {
     e.preventDefault();
 
     if (signedMessageInfo) {
@@ -52,18 +86,55 @@ export const SignMessage = () => {
     // transform to base64
     const objectBase64 = btoa(message);
 
-    // hash the object
-    const hash = SHA256(objectBase64).toString();
+    // send a post request with the payload
+    try {
+      const response = await axios.post(
+        `${process.env.API}/generate`,
+        { payload: objectBase64 },
+        {
+          headers: {
+            Authorization: `Bearer ${tokenLogin?.nativeAuthToken}`
+          }
+        }
+      );
 
-    setObjectBase64(objectBase64);
-    setObjectHash(hash);
+      setObjectHash(response.data);
 
-    signMessage({
-      message: objectBase64,
-      callbackRoute: window.location.href
-    });
+      setObjectBase64(objectBase64);
 
-    setMessage('');
+      signMessage({
+        message: objectBase64,
+        callbackRoute: window.location.href
+      });
+
+      setMessage('');
+    } catch (e: any) {
+      // Check if the error has a response with data property
+      if (e.response && e.response.data) {
+        toast.error(
+          `Error generating inscription hash: ${e.response.data.message}`
+        );
+      } else {
+        toast.error('Error generating hash for inscription');
+      }
+    }
+  };
+
+  const sendProcess = async () => {
+    const response = await axios.post(
+      `${process.env.API}/process`,
+      { txHash: inscribeTxHash },
+      {
+        headers: {
+          Authorization: `Bearer ${tokenLogin?.nativeAuthToken}`
+        }
+      }
+    );
+
+    if (response.data) {
+      console.log('Inscription processed');
+      sessionStorage.setItem('inscription', 'processed');
+    }
   };
 
   const handleClear = (e: MouseEvent) => {
@@ -136,14 +207,16 @@ export const SignMessage = () => {
       ) : (
         <Button
           data-testid='inscribeBtn'
-          onClick={() =>
-            inscribeTransaction(
+          onClick={async () => {
+            const sessionId = await inscribeTransaction(
               address,
               objectBase64,
               objectHash,
               signedMessageInfo?.signature
-            )
-          }
+            );
+
+            setInscribeSession(sessionId);
+          }}
         >
           Inscribe
         </Button>
@@ -172,7 +245,7 @@ const inscribeTransaction = async (
     chainID: getChainId()
   });
   await refreshAccount();
-  await sendTransactions({
+  const { sessionId } = await sendTransactions({
     transactions: tx,
     transactionsDisplayInfo: {
       processingMessage: 'Inscribing...',
@@ -181,4 +254,6 @@ const inscribeTransaction = async (
     },
     redirectAfterSign: false
   });
+
+  return sessionId;
 };

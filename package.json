@@ -18,12 +18,13 @@
     "moment": "2.29.4",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-hot-toast": "^2.4.1",
     "react-router-dom": "6.16.0"
   },
   "scripts": {
     "lint": "eslint --ext js,ts,tsx src",
     "run-cypress": "npx cypress run",
-    "start:devnet": "yarn run copy:devnet-config & vite dev",
+    "start:devnet": "yarn run copy:devnet-config & vite dev --port 3001",
     "start:testnet": "yarn run copy:testnet-config & vite dev",
     "start:mainnet": "yarn run copy:mainnet-config & vite dev",
     "build:devnet": "yarn run copy:devnet-config & vite build",

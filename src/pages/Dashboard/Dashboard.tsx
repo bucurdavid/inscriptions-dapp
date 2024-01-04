@@ -12,14 +12,14 @@ type WidgetsType = {
 
 const WIDGETS: WidgetsType[] = [
   {
-    title: 'Account Inscriptions',
-    widget: Account
-  },
-  {
-    title: 'Inscriptions',
+    title: 'Inscribe',
     widget: SignMessage,
     description: 'Store custom objects on the blockchain',
     reference: 'https://twitter.com/SasuRobert/status/1738173405981983018'
+  },
+  {
+    title: 'Account Inscriptions',
+    widget: Account
   }
 ];
 

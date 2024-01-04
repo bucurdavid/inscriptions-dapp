@@ -20,6 +20,7 @@ import {
 import { RouteNamesEnum } from 'localConstants';
 import { PageNotFound, Unlock } from 'pages';
 import { routes } from 'routes';
+import { Toaster } from 'react-hot-toast';
 
 const AppContent = () => {
   return (
@@ -51,6 +52,7 @@ const AppContent = () => {
     >
       <AxiosInterceptorContext.Listener>
         <Layout>
+          <Toaster />
           <TransactionsToastList />
           <NotificationModal />
           <SignTransactionsModals />
