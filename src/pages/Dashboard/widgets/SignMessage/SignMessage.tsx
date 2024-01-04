@@ -89,7 +89,7 @@ export const SignMessage = () => {
     // send a post request with the payload
     try {
       const response = await axios.post(
-        `${process.env.API}/generate`,
+        `${import.meta.env.VITE_INDEXER_API}/generate`,
         { payload: objectBase64 },
         {
           headers: {
@@ -122,7 +122,7 @@ export const SignMessage = () => {
 
   const sendProcess = async () => {
     const response = await axios.post(
-      `${process.env.API}/process`,
+      `${import.meta.env.VITE_INDEXER_API}/process`,
       { txHash: inscribeTxHash },
       {
         headers: {

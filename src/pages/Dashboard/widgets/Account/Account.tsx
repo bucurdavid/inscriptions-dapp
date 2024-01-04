@@ -2,12 +2,7 @@ import axios from 'axios';
 import { Label } from 'components/Label';
 import { OutputContainer } from 'components/OutputContainer';
 import { CopyButton } from 'components/sdkDappComponents';
-import {
-  useGetAccountInfo,
-  useGetActiveTransactionsStatus,
-  useGetLoginInfo,
-  useGetPendingTransactions
-} from 'hooks';
+import { useGetAccountInfo, useGetLoginInfo } from 'hooks';
 import { useEffect, useState } from 'react';
 import { Username } from './components';
 
@@ -15,11 +10,12 @@ export const Account = () => {
   const { address, account } = useGetAccountInfo();
   const { tokenLogin } = useGetLoginInfo();
   const [inscriptions, setInscriptions] = useState<any[]>([]);
+  console.log(import.meta.env.VITE_INDEXER_API);
 
   const getInscriptions = async () => {
     try {
       const response = await axios.get(
-        `${process.env.API}/${address}/inscriptions`,
+        `${import.meta.env.REACT_APP_INDEXER_API}/${address}/inscriptions`,
         {
           headers: {
             Authorization: `Bearer ${tokenLogin?.nativeAuthToken}`
