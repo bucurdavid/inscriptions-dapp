@@ -89,7 +89,7 @@ export const SignMessage = () => {
     // send a post request with the payload
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_INDEXER_API}/generate`,
+        `https://inscriptions-indexer-bucurdavid.koyeb.app/generate`,
         { payload: objectBase64 },
         {
           headers: {
@@ -122,7 +122,7 @@ export const SignMessage = () => {
 
   const sendProcess = async () => {
     const response = await axios.post(
-      `${import.meta.env.VITE_INDEXER_API}/process`,
+      `https://inscriptions-indexer-bucurdavid.koyeb.app/process`,
       { txHash: inscribeTxHash },
       {
         headers: {

@@ -10,12 +10,11 @@ export const Account = () => {
   const { address, account } = useGetAccountInfo();
   const { tokenLogin } = useGetLoginInfo();
   const [inscriptions, setInscriptions] = useState<any[]>([]);
-  console.log(import.meta.env.VITE_INDEXER_API);
 
   const getInscriptions = async () => {
     try {
       const response = await axios.get(
-        `${import.meta.env.REACT_APP_INDEXER_API}/${address}/inscriptions`,
+        `https://inscriptions-indexer-bucurdavid.koyeb.app/${address}/inscriptions`,
         {
           headers: {
             Authorization: `Bearer ${tokenLogin?.nativeAuthToken}`
